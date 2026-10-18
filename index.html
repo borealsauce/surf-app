@@ -25,7 +25,7 @@ tr.clk{cursor:pointer}.map{height:300px;border-radius:12px;margin:8px 0}
 .drop{border:2px dashed #2a6d97;border-radius:14px;padding:22px;text-align:center;color:var(--mu)}.drop.hov{border-color:var(--ac);color:var(--ac)}
 select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-radius:10px;padding:9px;font-size:15px}
 .wave{width:60px;height:60px}.pill{display:inline-block;padding:2px 8px;border-radius:9px;background:#12405f;font-size:11px;margin:2px}
-.mu{color:var(--mu);font-size:12px}h3{margin:4px 0 8px}
+.star{font-size:20px;color:#ffd23f;cursor:pointer}.mu{color:var(--mu);font-size:12px}h3{margin:4px 0 8px}
 .bar{height:6px;background:#12405f;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));animation:gr 1s ease}@keyframes gr{from{width:0!important}}
 </style></head><body>
 <header><svg class="wave" viewBox="0 0 60 60" style="width:34px;height:34px"><path d="M4 38c8-14 22-20 34-10-8-2-14 4-12 12 10 4 20-2 30-10" stroke="#2ee6d6" stroke-width="4" fill="none" stroke-linecap="round"/></svg><h1>Swell Log</h1><span class="mu" id="hdr"></span></header>
@@ -49,12 +49,12 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
 
 <section id="t-stats"><div class="card"><h3>Personal bests</h3><div class="grid" id="pb"></div></div>
 <div class="card"><h3>By month</h3><table id="monT"><thead><tr><th>Month</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div>
-<div class="card"><h3>By spot</h3><table id="spotT"><thead><tr><th>Spot</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div></section>
+<div class="card"><h3>By board</h3><table id="boardT"><thead><tr><th>Board</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div><div class="card"><h3>By spot</h3><table id="spotT"><thead><tr><th>Spot</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div></section>
 
-<section id="t-fc"><div class="card"><h3>Forecast</h3><select id="fcSpot"></select> <span class="mu" id="fcNow"></span>
-<div id="fcNowCard" class="grid" style="margin-top:10px"></div></div>
+<section id="t-fc"><div class="card"><h3>Conditions now</h3><table id="ovT"><thead><tr><th>★</th><th>Spot</th><th>Rating</th><th>Surf ft</th><th>Period</th><th>Wind</th></tr></thead><tbody><tr><td class="mu">Loading…</td></tr></tbody></table><div class="mu">Tap ☆ to favorite (pinned to top). Tap a spot for its forecast. Ratings are an estimate from swell and wind.</div></div><div class="card"><h3>Forecast</h3><select id="fcSpot"></select> <span class="mu" id="fcNow"></span>
+<div id="fcNowCard" class="grid" style="margin-top:10px"></div><div id="best" style="margin-top:10px"></div><canvas id="chart" style="width:100%;height:160px;margin-top:8px"></canvas></div>
 <div class="card"><h3>Tides · La Jolla (NOAA 9410230)</h3><table id="tideT" data-nosort><tbody></tbody></table></div>
-<div class="card"><h3>Next 3 days</h3><table id="fcT"><thead><tr><th>Time</th><th>Swell ft</th><th>Per s</th><th>Dir</th><th>Wind mph</th><th>Wind dir</th></tr></thead><tbody></tbody></table></div>
+<div class="card"><h3>Next 3 days</h3><table id="fcT"><thead><tr><th>Time</th><th>Rating</th><th>Swell ft</th><th>Per s</th><th>Dir</th><th>Wind mph</th></tr></thead><tbody></tbody></table></div>
 <div class="card"><h3>Spots</h3><table id="spT"><thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th class="nosort"></th></tr></thead><tbody></tbody></table>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><input id="nsN" placeholder="Name" style="flex:2"><input id="nsLa" placeholder="Lat" style="flex:1;width:80px"><input id="nsLo" placeholder="Lon" style="flex:1;width:80px"><button class="btn sec" id="nsAdd">Add</button><button class="btn sec" id="nsHere">Use my location</button></div></div></section>
 
