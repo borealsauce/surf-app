@@ -27,10 +27,20 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
 .wave{width:60px;height:60px}.pill{display:inline-block;padding:2px 8px;border-radius:9px;background:#12405f;font-size:11px;margin:2px}
 .star{font-size:20px;color:#ffd23f;cursor:pointer}.mu{color:var(--mu);font-size:12px}h3{margin:4px 0 8px}
 .bar{height:6px;background:#12405f;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));animation:gr 1s ease}@keyframes gr{from{width:0!important}}
+.hdrb{margin-left:auto;background:#12405f;color:var(--tx);border:0;border-radius:20px;padding:8px 14px;font-size:14px}
+#logT tbody td{padding:16px 6px}.latest{cursor:pointer;border-color:#2ee6d6}.latest:active{transform:scale(.98)}
+#detail{position:fixed;inset:0;z-index:2000;background:#031524;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateX(100%);transition:transform .28s ease;visibility:hidden}
+#detail.open{transform:none;visibility:visible}
+.dtop{position:relative}.dmap{height:46vh;width:100%}
+.back{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:10px;z-index:1000;background:#031524dd;color:#fff;border:1px solid #2ee6d6;border-radius:22px;padding:10px 16px;font-size:16px;font-weight:600}
+.sheet{position:relative;margin-top:-18px;background:var(--card);border-radius:20px 20px 0 0;padding:10px 16px calc(30px + env(safe-area-inset-bottom));z-index:500;min-height:60vh}
+.grab{width:44px;height:5px;border-radius:3px;background:#3a6a8c;margin:0 auto 8px}
+#toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;pointer-events:none;background:#2ee6d6;color:#022;font-weight:700;padding:12px 18px;border-radius:24px;z-index:3000;transition:.3s}
+#toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 </style></head><body>
-<header><svg class="wave" viewBox="0 0 60 60" style="width:34px;height:34px"><path d="M4 38c8-14 22-20 34-10-8-2-14 4-12 12 10 4 20-2 30-10" stroke="#2ee6d6" stroke-width="4" fill="none" stroke-linecap="round"/></svg><h1>Swell Log</h1><span class="mu" id="hdr"></span></header>
+<header><svg class="wave" viewBox="0 0 60 60" style="width:34px;height:34px"><path d="M4 38c8-14 22-20 34-10-8-2-14 4-12 12 10 4 20-2 30-10" stroke="#2ee6d6" stroke-width="4" fill="none" stroke-linecap="round"/></svg><h1>Swell Log</h1><button class="hdrb" id="hdr"></button></header>
 
-<section id="t-track" class="on">
+<section id="t-track" class="on"><div id="latest"></div>
  <div class="card"><h3>Live session</h3><div class="mu" id="spotNow">Spot auto-detected at start</div>
  <div class="grid" style="margin-top:10px">
   <div class="st"><div class="v" id="lw">0</div><div class="l">Waves</div></div>
@@ -44,8 +54,8 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
  <p class="mu">Garmin: Garmin Connect → activity → ⚙ → Export Original (.fit) or Export GPX; on iPhone save to Files, then choose here. Apple Watch: export workout GPX via an app like HealthFit. Rip Curl Search GPS has no official export.</p><div id="impMsg"></div></div>
 </section>
 
-<section id="t-log"><div class="card"><h3>Session log</h3><table id="logT"><thead><tr><th>Date</th><th>Spot</th><th>Waves</th><th>Top mph</th><th>Longest m</th><th>Dur</th></tr></thead><tbody></tbody></table></div>
-<div id="detail"></div></section>
+<section id="t-log"><div class="card"><h3>Sessions</h3><div class="mu">Tap a session to open it.</div><table id="logT"><thead><tr><th>Date</th><th>Spot</th><th>Waves</th><th>Top mph</th><th>Longest m</th><th>Dur</th></tr></thead><tbody></tbody></table></div>
+</section>
 
 <section id="t-stats"><div class="card"><h3>Personal bests</h3><div class="grid" id="pb"></div></div>
 <div class="card"><h3>By month</h3><table id="monT"><thead><tr><th>Month</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div>
@@ -58,7 +68,8 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
 <div class="card"><h3>Spots</h3><table id="spT"><thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th class="nosort"></th></tr></thead><tbody></tbody></table>
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><input id="nsN" placeholder="Name" style="flex:2"><input id="nsLa" placeholder="Lat" style="flex:1;width:80px"><input id="nsLo" placeholder="Lon" style="flex:1;width:80px"><button class="btn sec" id="nsAdd">Add</button><button class="btn sec" id="nsHere">Use my location</button></div></div></section>
 
-<nav><button data-t="track" class="on"><b>◉</b>Track</button><button data-t="log"><b>☰</b>Log</button><button data-t="stats"><b>★</b>Stats</button><button data-t="fc"><b>≋</b>Forecast</button></nav>
+<div id="detail"></div><div id="toast">New version — tap to refresh</div>
+<nav><button data-t="track" class="on"><b>◉</b>Track</button><button data-t="log"><b>☰</b>Sessions</button><button data-t="stats"><b>★</b>Stats</button><button data-t="fc"><b>≋</b>Forecast</button></nav>
 <script src="app.js"></script>
 <!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
