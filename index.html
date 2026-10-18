@@ -1,0 +1,129 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#04192b"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon.png">
+<title>Swell Log</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--bg:#04192b;--card:#0a2a44;--ac:#2ee6d6;--ac2:#3b8bff;--tx:#e6f4ff;--mu:#8fb3cc}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:linear-gradient(180deg,#021220,#06304f);color:var(--tx);min-height:100vh;padding-bottom:80px}
+header{padding:calc(env(safe-area-inset-top) + 14px) 16px 8px;display:flex;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#031524ee;backdrop-filter:blur(10px);border-top:1px solid #12405f;padding-bottom:env(safe-area-inset-bottom);z-index:999}
+nav button{flex:1;background:none;border:0;color:var(--mu);padding:10px 0;font-size:11px}nav button b{display:block;font-size:20px}
+nav button.on{color:var(--ac)}
+section{display:none;padding:0 14px;animation:up .5s ease}section.on{display:block}
+@keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border:1px solid #14466a;border-radius:16px;padding:14px;margin:10px 0;animation:up .6s ease backwards}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.st{background:#08243b;border-radius:12px;padding:10px}
+.st .v{font-size:24px;font-weight:700;color:var(--ac)}.st .l{font-size:11px;color:var(--mu);text-transform:uppercase}
+.btn{background:linear-gradient(90deg,var(--ac),var(--ac2));color:#022;border:0;border-radius:12px;padding:12px 16px;font-weight:700;font-size:15px}
+.btn.sec{background:#12405f;color:var(--tx)}.big{width:100%;padding:18px;font-size:18px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 5px;text-align:left;border-bottom:1px solid #12405f}th{color:var(--mu);font-size:11px;text-transform:uppercase}
+tr.clk{cursor:pointer}.map{height:300px;border-radius:12px;margin:8px 0}
+.drop{border:2px dashed #2a6d97;border-radius:14px;padding:22px;text-align:center;color:var(--mu)}.drop.hov{border-color:var(--ac);color:var(--ac)}
+select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-radius:10px;padding:9px;font-size:15px}
+.wave{width:60px;height:60px}.pill{display:inline-block;padding:2px 8px;border-radius:9px;background:#12405f;font-size:11px;margin:2px}
+.mu{color:var(--mu);font-size:12px}h3{margin:4px 0 8px}
+.bar{height:6px;background:#12405f;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));animation:gr 1s ease}@keyframes gr{from{width:0!important}}
+</style></head><body>
+<header><svg class="wave" viewBox="0 0 60 60" style="width:34px;height:34px"><path d="M4 38c8-14 22-20 34-10-8-2-14 4-12 12 10 4 20-2 30-10" stroke="#2ee6d6" stroke-width="4" fill="none" stroke-linecap="round"/></svg><h1>Swell Log</h1><span class="mu" id="hdr"></span></header>
+
+<section id="t-track" class="on">
+ <div class="card"><h3>Live session</h3><div class="mu" id="spotNow">Spot auto-detected at start</div>
+ <div class="grid" style="margin-top:10px">
+  <div class="st"><div class="v" id="lw">0</div><div class="l">Waves</div></div>
+  <div class="st"><div class="v" id="lt">0:00</div><div class="l">Time in water</div></div>
+  <div class="st"><div class="v" id="ls">0.0</div><div class="l">Top speed mph</div></div>
+  <div class="st"><div class="v" id="ld">0.00</div><div class="l">Distance mi</div></div></div>
+ <div style="margin-top:12px"><button class="btn big" id="go">Start session</button></div>
+ <p class="mu">Keep the screen on with phone in a waterproof case. Uses GPS + screen wake lock. iOS stops GPS if Safari is backgrounded.</p></div>
+ <div class="card"><h3>Import from watch</h3>
+ <div class="drop" id="drop">Drop FIT / GPX / TCX files here (multiple OK)<br><br><label class="btn sec">Choose files<input type="file" id="file" multiple accept=".fit,.gpx,.tcx,application/octet-stream,application/gpx+xml,text/xml" hidden></label></div>
+ <p class="mu">Garmin: Garmin Connect → activity → ⚙ → Export Original (.fit) or Export GPX; on iPhone save to Files, then choose here. Apple Watch: export workout GPX via an app like HealthFit. Rip Curl Search GPS has no official export.</p><div id="impMsg"></div></div>
+</section>
+
+<section id="t-log"><div class="card"><h3>Session log</h3><table id="logT"><thead><tr><th>Date</th><th>Spot</th><th>Waves</th><th>Top mph</th><th>Longest m</th><th>Dur</th></tr></thead><tbody></tbody></table></div>
+<div id="detail"></div></section>
+
+<section id="t-stats"><div class="card"><h3>Personal bests</h3><div class="grid" id="pb"></div></div>
+<div class="card"><h3>By month</h3><table id="monT"><thead><tr><th>Month</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div>
+<div class="card"><h3>By spot</h3><table id="spotT"><thead><tr><th>Spot</th><th>Sessions</th><th>Waves</th><th>Hours</th><th>Top mph</th></tr></thead><tbody></tbody></table></div></section>
+
+<section id="t-fc"><div class="card"><h3>Forecast</h3><select id="fcSpot"></select> <span class="mu" id="fcNow"></span>
+<div id="fcNowCard" class="grid" style="margin-top:10px"></div></div>
+<div class="card"><h3>Tides · La Jolla (NOAA 9410230)</h3><table id="tideT" data-nosort><tbody></tbody></table></div>
+<div class="card"><h3>Next 3 days</h3><table id="fcT"><thead><tr><th>Time</th><th>Swell ft</th><th>Per s</th><th>Dir</th><th>Wind mph</th><th>Wind dir</th></tr></thead><tbody></tbody></table></div>
+<div class="card"><h3>Spots</h3><table id="spT"><thead><tr><th>Name</th><th>Lat</th><th>Lon</th><th class="nosort"></th></tr></thead><tbody></tbody></table>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><input id="nsN" placeholder="Name" style="flex:2"><input id="nsLa" placeholder="Lat" style="flex:1;width:80px"><input id="nsLo" placeholder="Lon" style="flex:1;width:80px"><button class="btn sec" id="nsAdd">Add</button><button class="btn sec" id="nsHere">Use my location</button></div></div></section>
+
+<nav><button data-t="track" class="on"><b>◉</b>Track</button><button data-t="log"><b>☰</b>Log</button><button data-t="stats"><b>★</b>Stats</button><button data-t="fc"><b>≋</b>Forecast</button></nav>
+<script src="app.js"></script>
+<!--SORTABLE-START--><script>
+/* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
+   Works on dynamically rendered tables via event delegation. Totals (tfoot, .total/.ft/.tot rows,
+   or first cell TOTAL/ALL-TIME/GRAND) stay pinned at bottom. Group-label rows (fewer cells / colspan)
+   keep their members: sorting happens within each group. Uses td[data-v] when present.
+   Skip: th with own onclick, th.nosort, or table[data-nosort]. */
+(function(){
+  if(window.__sortableShared)return;window.__sortableShared=1;
+  var st=document.createElement('style');
+  st.textContent='table:not([data-nosort]) th:not(.nosort){cursor:pointer;user-select:none}th .srt-ar{font-size:.8em;opacity:.85;margin-left:3px}';
+  (document.head||document.documentElement).appendChild(st);
+  var MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  function key(cell){
+    if(!cell)return null;
+    var raw=cell.dataset&&cell.dataset.v!=null?cell.dataset.v:cell.textContent;
+    var s=String(raw).replace(/[▲▼]/g,'').trim();
+    if(!s||s==='—'||s==='-'||s==='–'||/^n\/?a$/i.test(s))return null;
+    var m;
+    if((m=s.match(/^(\d{4})-(\d{2})(?:-(\d{2}))?/)))return {n:Date.UTC(+m[1],+m[2]-1,+(m[3]||1))};
+    if((m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))){var y=+m[3];if(y<100)y+=2000;return {n:Date.UTC(y,+m[1]-1,+m[2])};}
+    if((m=s.match(/^([A-Za-z]{3})[a-z]*\.? (\d{1,2}),? (\d{4})$/))&&MON[m[1].toLowerCase()])return {n:Date.UTC(+m[3],MON[m[1].toLowerCase()]-1,+m[2])};
+    if((m=s.match(/^([A-Za-z]{3})[a-z]* (\d{4})$/))&&MON[m[1].toLowerCase()])return {n:Date.UTC(+m[2],MON[m[1].toLowerCase()]-1,1)};
+    if((m=s.match(/^Q([1-4]) (\d{4})$/i)))return {n:Date.UTC(+m[2],(+m[1]-1)*3,1)};
+    var t=s.replace(/[$,%x×\s]|USD/gi,'').replace(/^\+/,'').replace(/[−–]/g,'-');
+    var neg=/^\(.*\)$/.test(t);if(neg)t=t.slice(1,-1);
+    var mult=1;if((m=t.match(/^(-?[\d.]+)([KMB])$/i))){t=m[1];mult={k:1e3,m:1e6,b:1e9}[m[2].toLowerCase()];}
+    if(/^-?\d*\.?\d+$/.test(t))return {n:parseFloat(t)*mult*(neg?-1:1)};
+    return {s:s.toLowerCase()};
+  }
+  function pinned(r){
+    if(r.parentElement&&r.parentElement.tagName==='TFOOT')return true;
+    if(/(^|\s)(total|totals|ft|tot|sum|grand|pinned)(\s|$)/i.test(r.className))return true;
+    var c=r.cells[0];return !!c&&/^\s*(TOTAL|TOTALS|ALL-TIME|GRAND TOTAL)\b/i.test(c.textContent);
+  }
+  document.addEventListener('click',function(e){
+    var th=e.target.closest&&e.target.closest('th');if(!th||th.onclick||th.classList.contains('nosort'))return;
+    var tb=th.closest('table');if(!tb||tb.hasAttribute('data-nosort'))return;
+    var hr=th.parentElement;if(hr.parentElement.tagName==='TFOOT')return;
+    var ci=0;for(var k=0;k<hr.cells.length&&hr.cells[k]!==th;k++)ci+=hr.cells[k].colSpan||1;
+    var ncol=0;for(k=0;k<hr.cells.length;k++)ncol+=hr.cells[k].colSpan||1;
+    var dir=th.dataset.sdir==='asc'?'desc':'asc',m=dir==='asc'?1:-1;
+    tb.querySelectorAll('th').forEach(function(x){delete x.dataset.sdir;var a=x.querySelector('.srt-ar');if(a)a.remove();});
+    th.dataset.sdir=dir;var ar=document.createElement('span');ar.className='srt-ar';ar.textContent=dir==='asc'?'▲':'▼';th.appendChild(ar);
+    var bodies=tb.tBodies.length?[].slice.call(tb.tBodies):[tb];
+    bodies.forEach(function(body){
+      var all=[].slice.call(body.rows).filter(function(r){return r!==hr&&!(r.cells.length&&r.cells[0].tagName==='TH'&&!r.querySelector('td'));});
+      var pins=[],groups=[{head:null,rows:[]}];
+      all.forEach(function(r){
+        if(pinned(r)){pins.push(r);return;}
+        var w=0;for(var j=0;j<r.cells.length;j++)w+=r.cells[j].colSpan||1;
+        if(r.cells.length===1&&ncol>1)groups.push({head:r,rows:[]});else groups[groups.length-1].rows.push(r);
+      });
+      function cellAt(r){var x=0;for(var j=0;j<r.cells.length;j++){if(x===ci)return r.cells[j];x+=r.cells[j].colSpan||1;}return null;}
+      groups.forEach(function(g){
+        g.rows.sort(function(a,b){var A=key(cellAt(a)),B=key(cellAt(b));
+          if(!A&&!B)return 0;if(!A)return 1;if(!B)return -1;
+          if(A.n!=null&&B.n!=null)return (A.n-B.n)*m;
+          return String(A.s!=null?A.s:A.n).localeCompare(String(B.s!=null?B.s:B.n),undefined,{numeric:true})*m;});
+        if(g.head)body.appendChild(g.head);g.rows.forEach(function(r){body.appendChild(r);});
+      });
+      pins.forEach(function(r){body.appendChild(r);});
+    });
+  },false);
+})();
+
+</script><!--SORTABLE-END-->
+</body></html>

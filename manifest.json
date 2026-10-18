@@ -1,0 +1,1 @@
+{"name":"Swell Log","short_name":"Swell Log","start_url":"./","display":"standalone","background_color":"#04192b","theme_color":"#04192b","icons":[{"src":"icon.png","sizes":"512x512","type":"image/png"}],"file_handlers":[{"action":"./","accept":{"application/octet-stream":[".fit"],"application/gpx+xml":[".gpx"],"application/xml":[".tcx"]}}]}
