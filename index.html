@@ -7,12 +7,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{--bg:#04192b;--card:#0a2a44;--ac:#2ee6d6;--ac2:#3b8bff;--tx:#e6f4ff;--mu:#8fb3cc}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:linear-gradient(180deg,#021220,#06304f);color:var(--tx);min-height:100vh;padding-bottom:80px}
-header{padding:calc(env(safe-area-inset-top) + 14px) 16px 8px;display:flex;align-items:center;gap:10px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,system-ui,sans-serif;background:linear-gradient(180deg,#021220,#06304f);color:var(--tx);min-height:100vh;padding-bottom:30px}
+header{padding:14px 16px 4px;display:flex;align-items:center;gap:10px}
 header h1{font-size:22px;margin:0;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;color:transparent}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#031524ee;backdrop-filter:blur(10px);border-top:1px solid #12405f;padding-bottom:env(safe-area-inset-bottom);z-index:999}
-nav button{flex:1;background:none;border:0;color:var(--mu);padding:10px 0;font-size:11px}nav button b{display:block;font-size:20px}
-nav button.on{color:var(--ac)}
+nav{position:sticky;top:0;display:flex;gap:6px;background:#031524f2;backdrop-filter:blur(10px);border-bottom:1px solid #12405f;padding:calc(env(safe-area-inset-top) + 6px) 8px 8px;z-index:999}
+nav button{flex:1;min-height:62px;background:#0a2a44;border:2px solid #14466a;border-radius:14px;color:#cfe6f7;padding:6px 0;font-size:14px;font-weight:700}nav button b{display:block;font-size:26px;line-height:1.1}
+nav button.on{background:linear-gradient(180deg,#2ee6d6,#3b8bff);color:#021;border-color:#fff}
 section{display:none;padding:0 14px;animation:up .5s ease}section.on{display:block}
 @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 .card{background:var(--card);border:1px solid #14466a;border-radius:16px;padding:14px;margin:10px 0;animation:up .6s ease backwards}
@@ -31,13 +31,14 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
 #logT tbody td{padding:16px 6px}.latest{cursor:pointer;border-color:#2ee6d6}.latest:active{transform:scale(.98)}
 #detail{position:fixed;inset:0;z-index:2000;background:#031524;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateX(100%);transition:transform .28s ease;visibility:hidden}
 #detail.open{transform:none;visibility:visible}
-.dtop{position:relative}.dmap{height:46vh;width:100%}
+.dtop{position:relative}.dmap{height:35vh;width:100%}
 .back{position:absolute;top:calc(env(safe-area-inset-top) + 10px);left:10px;z-index:1000;background:#031524dd;color:#fff;border:1px solid #2ee6d6;border-radius:22px;padding:10px 16px;font-size:16px;font-weight:600}
-.sheet{position:relative;margin-top:-18px;background:var(--card);border-radius:20px 20px 0 0;padding:10px 16px calc(30px + env(safe-area-inset-bottom));z-index:500;min-height:60vh}
-.grab{width:44px;height:5px;border-radius:3px;background:#3a6a8c;margin:0 auto 8px}
-#toast{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;pointer-events:none;background:#2ee6d6;color:#022;font-weight:700;padding:12px 18px;border-radius:24px;z-index:3000;transition:.3s}
+.sheet{position:relative;background:var(--bg);padding:10px 16px calc(30px + env(safe-area-inset-bottom));z-index:500;min-height:60vh}
+.g3{grid-template-columns:repeat(3,1fr)!important;gap:8px}.g3 .v{font-size:18px}.g3 .st{padding:8px}.grab{width:44px;height:5px;border-radius:3px;background:#3a6a8c;margin:0 auto 8px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,40px);opacity:0;pointer-events:none;background:#2ee6d6;color:#022;font-weight:700;padding:12px 18px;border-radius:24px;z-index:3000;transition:.3s}
 #toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 </style></head><body>
+<nav><button data-t="track" class="on"><b>◉</b>Track</button><button data-t="log"><b>☰</b>Sessions</button><button data-t="stats"><b>★</b>Stats</button><button data-t="fc"><b>≋</b>Forecast</button></nav>
 <header><svg class="wave" viewBox="0 0 60 60" style="width:34px;height:34px"><path d="M4 38c8-14 22-20 34-10-8-2-14 4-12 12 10 4 20-2 30-10" stroke="#2ee6d6" stroke-width="4" fill="none" stroke-linecap="round"/></svg><h1>Swell Log</h1><button class="hdrb" id="hdr"></button></header>
 
 <section id="t-track" class="on"><div id="latest"></div>
@@ -69,7 +70,7 @@ select,input{background:#08243b;color:var(--tx);border:1px solid #14466a;border-
 <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><input id="nsN" placeholder="Name" style="flex:2"><input id="nsLa" placeholder="Lat" style="flex:1;width:80px"><input id="nsLo" placeholder="Lon" style="flex:1;width:80px"><button class="btn sec" id="nsAdd">Add</button><button class="btn sec" id="nsHere">Use my location</button></div></div></section>
 
 <div id="detail"></div><div id="toast">New version — tap to refresh</div>
-<nav><button data-t="track" class="on"><b>◉</b>Track</button><button data-t="log"><b>☰</b>Sessions</button><button data-t="stats"><b>★</b>Stats</button><button data-t="fc"><b>≋</b>Forecast</button></nav>
+
 <script src="app.js"></script>
 <!--SORTABLE-START--><script>
 /* Shared sortable tables (Grok Bot trackers). Click any header: asc/desc toggle with ▲/▼.
